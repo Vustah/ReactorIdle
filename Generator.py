@@ -41,7 +41,7 @@ class Generator:
 	def setPumpLevel(self,pump_level):
 		self.pump_level = pump_level
 		self.Water_pump_base = 25000
-		self.water_pump = self.Water_pump_base*1.5*self.pump_level
+		self.water_pump = self.Water_pump_base*1.5**self.pump_level
 		
 
 	def calcPumpCapacity(self,pump_level=0):
