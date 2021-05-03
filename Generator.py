@@ -82,6 +82,7 @@ class PowerPlant:
 		self.pump.setPumpLevel(pump_level)
 		generator_per_pump = self.pump.getPumpWater()/water_used_per_generator
 		return generator_per_pump
+
 	def calcGroundPumpCapacity(self,pump_level=0):
 		generator_per_reactor = m.ceil(self.calcGenerator(self.reactor_pwr))
 		heat_disipated_per_generator = self.reactor_pwr/generator_per_reactor
@@ -99,7 +100,7 @@ class PowerPlant:
 		print("Pump Capacity level:              %d" %pump_level)
 		print("Generator per water pump:         %d (%.2f)" %(m.floor(self.calcPumpCapacity(pump_level)),self.calcPumpCapacity(pump_level)))
 		print("Ground Water Pump Capacity level: %d" %ground_pump_level)
-		print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcPumpCapacity(ground_pump_level)),self.calcPumpCapacity(ground_pump_level)))
+		print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcGroundPumpCapacity(ground_pump_level)),self.calcGroundPumpCapacity(ground_pump_level)))
 
 def parseInputs(arguments):
 	arg_list = ["-rp", "-rl", "-gl", "-gwl", "-pl", "-gpl"]
