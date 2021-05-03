@@ -17,8 +17,9 @@ class Pump(object):
 		return self.pump_level
 
 class GroundWaterPump(Pump):
-	def print_base(self):
-		print(self.base, self.level)
+	def __init__(self, base=67500, level = 0):
+		self.Water_pump_base = base
+		self.pump_level = level
 
 class Generator:
 	Gen_base = 9
@@ -81,18 +82,28 @@ class PowerPlant:
 		self.pump.setPumpLevel(pump_level)
 		generator_per_pump = self.pump.getPumpWater()/water_used_per_generator
 		return generator_per_pump
+	def calcGroundPumpCapacity(self,pump_level=0):
+		generator_per_reactor = m.ceil(self.calcGenerator(self.reactor_pwr))
+		heat_disipated_per_generator = self.reactor_pwr/generator_per_reactor
+		water_used_per_generator = (heat_disipated_per_generator-self.generator.getGeneratorLevel())/100.0
+		self.groundWaterPump.setPumpLevel(pump_level)
+		generator_per_pump = self.groundWaterPump.getPumpWater()/water_used_per_generator
+		return generator_per_pump
 
 	def getGeneratorStats(self):
 		pump_level = self.pump.getPumpWaterLevel()
-		print("Generator level:          %d" %self.generator.Gen_level)
-		print("Generator water level:    %d" %self.generator.Gen_water_level)
-		print("Generator per reactor:    %d (%.2f)" %(m.ceil(self.calcGenerator(self.reactor.getReactorPWR())),self.calcGenerator(self.reactor.getReactorPWR())))
-		print("Pump Capacity level:      %d" %pump_level)
-		print("Generator per water pump: %d (%.2f)" %(m.floor(self.calcPumpCapacity(pump_level)),self.calcPumpCapacity(pump_level)))
+		ground_pump_level = self.groundWaterPump.getPumpWaterLevel()
+		print("Generator level:                  %d" %self.generator.Gen_level)
+		print("Generator water level:            %d" %self.generator.Gen_water_level)
+		print("Generator per reactor:            %d (%.2f)" %(m.ceil(self.calcGenerator(self.reactor.getReactorPWR())),self.calcGenerator(self.reactor.getReactorPWR())))
+		print("Pump Capacity level:              %d" %pump_level)
+		print("Generator per water pump:         %d (%.2f)" %(m.floor(self.calcPumpCapacity(pump_level)),self.calcPumpCapacity(pump_level)))
+		print("Ground Water Pump Capacity level: %d" %ground_pump_level)
+		print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcPumpCapacity(ground_pump_level)),self.calcPumpCapacity(ground_pump_level)))
 
 def parseInputs(arguments):
-	arg_list = ["-rp", "-rl", "-gl", "-gwl", "-pl"]
-	arg_values = [0,0,0,0,0]
+	arg_list = ["-rp", "-rl", "-gl", "-gwl", "-pl", "-gpl"]
+	arg_values = [0,0,0,0,0,0]
 	
 	for i in range(len(arg_list)):
 		if arg_list[i] in arguments:
@@ -103,8 +114,8 @@ def parseInputs(arguments):
 	gen_lvl = arg_values[2]
 	gen_water_lvl = arg_values[3]
 	pump_lvl = arg_values[4]
-	
-	return reactor_pwr,reactor_lvl,gen_lvl,gen_water_lvl,pump_lvl
+	ground_pump_lvl = arg_values[5]
+	return reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl
 
 def help():
 	help_statement= """
@@ -113,6 +124,7 @@ def help():
 	-gl : Generator Level
 	-gwl: Generator Water Level
 	-pl : Pump Level
+	-gpl = Ground Pump Level
 	"""
 	print(help_statement)
 
@@ -124,7 +136,7 @@ if __name__ == "__main__":
 	except IndexError as e:
 		exit(1)		
 	try:
-		reactor_pwr,reactor_lvl,gen_lvl,gen_water_lvl,pump_lvl = parseInputs(sys.argv[1:])
+		reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl = parseInputs(sys.argv[1:])
 		generator = Generator()
 
 		generator.setWaterLevel(gen_water_lvl)
@@ -133,13 +145,13 @@ if __name__ == "__main__":
 		reactor = Reactor(reactor_pwr)
 		reactor.setReactorLevel(reactor_lvl)
 		
-		
 		pump = Pump()
 		pump.setPumpLevel(pump_lvl)
-		
-		groundWaterPump = GroundWaterPump(67500, 0)
 
-		powerPlant = PowerPlant(generator, pump, groundWaterPump,reactor)
+		groundWaterPump = GroundWaterPump()
+		groundWaterPump.setPumpLevel(ground_pump_lvl)
+
+		powerPlant = PowerPlant(generator, pump, groundWaterPump, reactor)
 		powerPlant.getGeneratorStats()
 
 	except IndexError as e:
