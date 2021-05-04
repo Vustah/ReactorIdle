@@ -125,7 +125,7 @@ def help():
 	-gl : Generator Level
 	-gwl: Generator Water Level
 	-pl : Pump Level
-	-gpl = Ground Pump Level
+	-gpl: Ground Pump Level
 	"""
 	print(help_statement)
 
