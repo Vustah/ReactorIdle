@@ -162,3 +162,6 @@ if __name__ == "__main__":
 		print("ZERO_DIVISION_ERROR")
 		exit(1)
 
+	except ValueError as e:
+		print("Could not convert argument to float.")
+		exit(1)
