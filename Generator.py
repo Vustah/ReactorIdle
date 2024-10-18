@@ -1,5 +1,6 @@
 import sys
 import math as m
+import argparse
 
 class Pump(object):
 	def __init__(self, base=25000, level=0):
@@ -102,42 +103,23 @@ class PowerPlant:
 		print("Ground Water Pump Capacity level: %d" %ground_pump_level)
 		print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcGroundPumpCapacity(ground_pump_level)),self.calcGroundPumpCapacity(ground_pump_level)))
 
-def parseInputs(arguments):
-	arg_list = ["-rp", "-rl", "-gl", "-gwl", "-pl", "-gpl"]
-	arg_values = [0,0,0,0,0,0]
-	
-	for i in range(len(arg_list)):
-		if arg_list[i] in arguments:
-			arg_values[i] = float(arguments[arguments.index(arg_list[i])+1])
-	
-	reactor_pwr = arg_values[0] 
-	reactor_lvl = arg_values[1]
-	gen_lvl = arg_values[2]
-	gen_water_lvl = arg_values[3]
-	pump_lvl = arg_values[4]
-	ground_pump_lvl = arg_values[5]
-	return reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl
+def parseInputs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-rp",    help="Reactor Power",           type=float, default=0, dest="reactor_pwr")
+    parser.add_argument("-rl",    help="Reactor level",           type=float, default=0, dest="reactor_lvl")
+    parser.add_argument("-gl",    help="Generator Level",         type=float, default=0, dest="gen_lvl")
+    parser.add_argument("-gwl",   help="Generator Water Level",   type=float, default=0, dest="gen_water_lvl")
+    parser.add_argument("-pl",    help="Pump Level",              type=float, default=0, dest="pump_lvl")
+    parser.add_argument("-gpl",   help="Ground Pump Level",       type=float, default=0, dest="ground_pump_lvl" )
+    args = parser.parse_args()
+    
 
-def help():
-	help_statement= """
-	-rp : Reactor Power
-	-rl : Reactor level
-	-gl : Generator Level
-	-gwl: Generator Water Level
-	-pl : Pump Level
-	-gpl: Ground Pump Level
-	"""
-	print(help_statement)
+    return args.reactor_pwr, args.reactor_lvl, args.gen_lvl, args.gen_water_lvl, args.pump_lvl, args.ground_pump_lvl
+
 
 if __name__ == "__main__":
 	try:
-		if sys.argv[1] == "-h" or sys.argv[1] == "-help":
-			help()
-			exit(0)
-	except IndexError as e:
-		exit(1)		
-	try:
-		reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl = parseInputs(sys.argv[1:])
+		reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl = parseInputs()
 		generator = Generator()
 
 		generator.setWaterLevel(gen_water_lvl)
