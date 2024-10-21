@@ -52,7 +52,7 @@ class Generator:
         return self.Gen_water
 
 class Reactor:
-    def __init__(self, reactor_base_pwr=3, reactor_level=0, isolation = 0):
+    def __init__(self, reactor_base_pwr=3, reactor_level=0, isolation = None):
         self.reactor_base_pwr = reactor_base_pwr
         self.reactor_level = reactor_level
         if isinstance(isolation,Isolation):
@@ -61,8 +61,8 @@ class Reactor:
             
     def setReactorLevel(self, reactor_level=0, isolation = 0):
         self.reactor_level = reactor_level
-        if isinstance(isolation,Isolation):
-            self.isolation = isolation
+        self.isolation = isolation
+        if self.isolation is not None:
             self.reactor_pwr = self.reactor_base_pwr*(1.25**reactor_level)*(1+self.isolation.getIsolation())	
         else:
             self.reactor_pwr = self.reactor_base_pwr*(1.25**reactor_level)
@@ -118,7 +118,10 @@ class PowerPlant:
     def printGeneratorStats(self):
         pump_level = self.pump.getPumpWaterLevel()
         ground_pump_level = self.groundWaterPump.getPumpWaterLevel()
-        isolation_level = int(self.isolation.getIsolationLevel())
+        try:
+            isolation_level = int(self.isolation.getIsolationLevel())
+        except AttributeError:
+            isolation_level = None
         
         print("Reactor output:                   %d" %int(self.reactor.getReactorPWR()))
         print("Generator level:                  %d" %self.generator.Gen_level)
@@ -128,7 +131,11 @@ class PowerPlant:
         print("Generator per water pump:         %d (%.2f)" %(m.floor(self.calcPumpCapacity(pump_level)),self.calcPumpCapacity(pump_level)))
         print("Ground Water Pump Capacity level: %d" %ground_pump_level)
         print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcGroundPumpCapacity(ground_pump_level)),self.calcGroundPumpCapacity(ground_pump_level)))
-        print("Isolation level:                  %d" %isolation_level)
+        try:
+            print("Isolation level:                  %d" %isolation_level)
+        except TypeError:
+            print("Isolation level:                  --" )
+            
 
 
 
@@ -140,7 +147,7 @@ def parseInputs():
     parser.add_argument("-gwl",   help="Generator Water Level",   	type=float, default=0, dest="gen_water_lvl")
     parser.add_argument("-pl",    help="Pump Level",              	type=float, default=0, dest="pump_lvl")
     parser.add_argument("-gpl",   help="Ground Pump Level",       	type=float, default=0, dest="ground_pump_lvl" )
-    parser.add_argument("-iso",   help="Isolation Level",       	type=float, default=0, dest="isolation_lvl" )
+    parser.add_argument("-iso",   help="Isolation Level",       	type=float, default=None, dest="isolation_lvl" )
     
     args = parser.parse_args()
     
@@ -156,8 +163,11 @@ if __name__ == "__main__":
         generator.setWaterLevel(gen_water_lvl)
         generator.setGeneratorLevel(gen_lvl)
         
-        isolation = Isolation()
-        isolation.setIsolation(isolation_lvl)
+        isolation = None
+        if isolation_lvl != None:
+            isolation = Isolation()
+            isolation.setIsolation(isolation_lvl)
+        
         
         reactor = Reactor(reactor_pwr,isolation=isolation)
         reactor.setReactorLevel(reactor_lvl,isolation=isolation)
