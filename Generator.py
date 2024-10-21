@@ -52,18 +52,19 @@ class Generator:
         return self.Gen_water
 
 class Reactor:
-    def __init__(self, reactor_base_pwr=3, reactor_level=0, isolation = None):
+    def __init__(self, reactor_base_pwr=3, reactor_level=0, isolation = None,isolation_number=0):
         self.reactor_base_pwr = reactor_base_pwr
-        self.reactor_level = reactor_level
+        self.reactor_level    = reactor_level
+        self.isolation_number = isolation_number
         if isinstance(isolation,Isolation):
             self.isolation = isolation
-        self.setReactorLevel(reactor_level=reactor_level, isolation=isolation)
+        self.setReactorLevel(reactor_level=reactor_level, isolation=isolation,isolation_number=isolation_number)
             
-    def setReactorLevel(self, reactor_level=0, isolation = 0):
+    def setReactorLevel(self, reactor_level=0, isolation = 0,isolation_number=0):
         self.reactor_level = reactor_level
         self.isolation = isolation
         if self.isolation is not None:
-            self.reactor_pwr = self.reactor_base_pwr*(1.25**reactor_level)*(1+self.isolation.getIsolation())	
+            self.reactor_pwr = self.reactor_base_pwr * (1.25**reactor_level) * (1+self.isolation.getIsolation()*isolation_number)
         else:
             self.reactor_pwr = self.reactor_base_pwr*(1.25**reactor_level)
         
@@ -141,23 +142,24 @@ class PowerPlant:
 
 def parseInputs():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-rp",    help="Reactor Power",           	type=float, default=0, dest="reactor_pwr")
-    parser.add_argument("-rl",    help="Reactor level",           	type=float, default=0, dest="reactor_lvl")
-    parser.add_argument("-gl",    help="Generator Level",         	type=float, default=0, dest="gen_lvl")
-    parser.add_argument("-gwl",   help="Generator Water Level",   	type=float, default=0, dest="gen_water_lvl")
-    parser.add_argument("-pl",    help="Pump Level",              	type=float, default=0, dest="pump_lvl")
-    parser.add_argument("-gpl",   help="Ground Pump Level",       	type=float, default=0, dest="ground_pump_lvl" )
-    parser.add_argument("-iso",   help="Isolation Level",       	type=float, default=None, dest="isolation_lvl" )
+    parser.add_argument("-rp",    help="Reactor Power",         type=float, default=0, dest="reactor_pwr")
+    parser.add_argument("-rl",    help="Reactor level",         type=float, default=0, dest="reactor_lvl")
+    parser.add_argument("-gl",    help="Generator Level",       type=float, default=0, dest="gen_lvl")
+    parser.add_argument("-gwl",   help="Generator Water Level", type=float, default=0, dest="gen_water_lvl")
+    parser.add_argument("-pl",    help="Pump Level",            type=float, default=0, dest="pump_lvl")
+    parser.add_argument("-gpl",   help="Ground Pump Level",     type=float, default=0, dest="ground_pump_lvl" )
+    parser.add_argument("-iso",   help="Isolation Level",       type=float, default=None, dest="isolation_lvl" )
+    parser.add_argument("-iso_no",   help="Isolation number",   type=float, default=0, dest="isolation_no" )
     
     args = parser.parse_args()
     
 
-    return args.reactor_pwr, args.reactor_lvl, args.gen_lvl, args.gen_water_lvl, args.pump_lvl, args.ground_pump_lvl, args.isolation_lvl
+    return args.reactor_pwr, args.reactor_lvl, args.gen_lvl, args.gen_water_lvl, args.pump_lvl, args.ground_pump_lvl, args.isolation_lvl,args.isolation_no
 
 
 if __name__ == "__main__":
     try:
-        reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl,isolation_lvl = parseInputs()
+        reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl,isolation_lvl,isolation_no = parseInputs()
         generator = Generator()
 
         generator.setWaterLevel(gen_water_lvl)
@@ -169,8 +171,8 @@ if __name__ == "__main__":
             isolation.setIsolation(isolation_lvl)
         
         
-        reactor = Reactor(reactor_pwr,isolation=isolation)
-        reactor.setReactorLevel(reactor_lvl,isolation=isolation)
+        reactor = Reactor(reactor_pwr,isolation=isolation,isolation_number=isolation_no)
+        reactor.setReactorLevel(reactor_lvl,isolation=isolation,isolation_number=isolation_no)
         
         pump = Pump()
         pump.setPumpLevel(pump_lvl)
