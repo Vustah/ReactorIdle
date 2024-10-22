@@ -119,23 +119,29 @@ class PowerPlant:
     def printGeneratorStats(self):
         pump_level = self.pump.getPumpWaterLevel()
         ground_pump_level = self.groundWaterPump.getPumpWaterLevel()
+        local_reactor_pwr = self.reactor.getReactorPWR()
+        num_generators = self.calcGenerator(local_reactor_pwr)
+        pump_capacity = self.calcPumpCapacity(pump_level)
+        ground_pump_capacity = self.calcGroundPumpCapacity(ground_pump_level)
         try:
             isolation_level = int(self.isolation.getIsolationLevel())
         except AttributeError:
             isolation_level = None
         
-        print("Reactor output:                   %d" %int(self.reactor.getReactorPWR()))
-        print("Generator level:                  %d" %self.generator.Gen_level)
-        print("Generator water level:            %d" %self.generator.Gen_water_level)
-        print("Generator per reactor:            %d (%.2f)" %(m.ceil(self.calcGenerator(self.reactor.getReactorPWR())),self.calcGenerator(self.reactor.getReactorPWR())))
-        print("Pump Capacity level:              %d" %pump_level)
-        print("Generator per water pump:         %d (%.2f)" %(m.floor(self.calcPumpCapacity(pump_level)),self.calcPumpCapacity(pump_level)))
-        print("Ground Water Pump Capacity level: %d" %ground_pump_level)
-        print("Generator per ground water pump:  %d (%.2f)" %(m.floor(self.calcGroundPumpCapacity(ground_pump_level)),self.calcGroundPumpCapacity(ground_pump_level)))
+        # print("Reactor output:                   %f" %local_reactor_pwr)
+        print("Reactor output:                   {:>15,}           ".format(int(local_reactor_pwr)))
+        print("Generator level:                  {:>15,}           ".format(int(self.generator.Gen_level)))
+        print("Generator water level:            {:>15,}           ".format(int(self.generator.Gen_water_level)))
+        print("Generator per reactor:            {:>15,} ({:>,.2f})".format(m.ceil(num_generators),num_generators))
+        print("Pump Capacity level:              {:>15,}           ".format(int(pump_level)))
+        print("Generator per water pump:         {:>15,} ({:>,.2f})".format(m.floor(pump_capacity),pump_capacity))
+        print("Ground Water Pump Capacity level: {:>15,}           ".format(int(ground_pump_level)))
+        print("Generator per ground water pump:  {:>15,} ({:>,.2f})".format(m.floor(ground_pump_capacity),ground_pump_capacity))
         try:
-            print("Isolation level:                  %d" %isolation_level)
+            print("Isolation level:                  {:>15,}".format(int(isolation_level)))
         except TypeError:
-            print("Isolation level:                  --" )
+            pass
+
             
 
 
