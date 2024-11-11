@@ -23,8 +23,9 @@ class GroundWaterPump(Pump):
         self.pump_level = level
 
 class Generator:
-    Gen_base = 9
-    Gen_water_base = 5000
+    Gen_base = 3
+    Gen_water_base = 0
+    Gen_max_heat = 900
 
     def __init__(self,Gen_level=0, Gen_water_level=0):
         self.Gen_level = Gen_level
@@ -45,12 +46,29 @@ class Generator:
             print("Generator.%-20s = %r" % (func, getattr(Generator, func)))
             #print(func)
 
-    def getGeneratorLevel(self):
+    def getGeneratorCapacity(self):
         return self.Gen
 
-    def getWaterLevel(self):
+    def getWater(self):
         return self.Gen_water
 
+class Generator2(Generator):
+    Gen_base = 9
+    Gen_water_base = 5000
+    Gen_max_heat = 150
+    def __init__(self,Gen_level=0, Gen_water_level=0):
+        super.__init__(Gen_level,Gen_water_level)
+
+class Generator3(Generator):
+    Gen_base = 32
+    Gen_water_base = 8000
+    Gen_max_heat = 900
+    def __init__(self,Gen_level=0, Gen_water_level=0):
+        super.Gen_base = 32
+        super.Gen_water_base = 8000
+        super.Gen_max_heat = 900
+        super.__init__(Gen_level,Gen_water_level)
+        
 class Reactor:
     def __init__(self, reactor_base_pwr=3, reactor_level=0, isolation = None,isolation_number=0):
         self.reactor_base_pwr = reactor_base_pwr
@@ -98,12 +116,12 @@ class PowerPlant:
 
     def calcGenerator(self, reactor_pwr=0):
         self.reactor_pwr = reactor_pwr
-        return reactor_pwr/(self.generator.getGeneratorLevel()+self.generator.getWaterLevel()*100)
+        return reactor_pwr/(self.generator.getGeneratorCapacity()+self.generator.getWater()*100)
     
     def calcPumpCapacity(self,pump_level=0):
         generator_per_reactor = m.ceil(self.calcGenerator(self.reactor_pwr))
         heat_disipated_per_generator = self.reactor_pwr/generator_per_reactor
-        water_used_per_generator = (heat_disipated_per_generator-self.generator.getGeneratorLevel())/100.0
+        water_used_per_generator = (heat_disipated_per_generator-self.generator.getGeneratorCapacity())/100.0
         self.pump.setPumpLevel(pump_level)
         generator_per_pump = self.pump.getPumpWater()/water_used_per_generator
         return generator_per_pump
@@ -111,7 +129,7 @@ class PowerPlant:
     def calcGroundPumpCapacity(self,pump_level=0):
         generator_per_reactor = m.ceil(self.calcGenerator(self.reactor_pwr))
         heat_disipated_per_generator = self.reactor_pwr/generator_per_reactor
-        water_used_per_generator = (heat_disipated_per_generator-self.generator.getGeneratorLevel())/100.0
+        water_used_per_generator = (heat_disipated_per_generator-self.generator.getGeneratorCapacity())/100.0
         self.groundWaterPump.setPumpLevel(pump_level)
         generator_per_pump = self.groundWaterPump.getPumpWater()/water_used_per_generator
         return generator_per_pump
@@ -166,10 +184,21 @@ def parseInputs():
 if __name__ == "__main__":
     try:
         reactor_pwr, reactor_lvl, gen_lvl, gen_water_lvl, pump_lvl, ground_pump_lvl,isolation_lvl,isolation_no = parseInputs()
-        generator = Generator()
+        generator1 = Generator()
 
-        generator.setWaterLevel(gen_water_lvl)
-        generator.setGeneratorLevel(gen_lvl)
+        generator1.setWaterLevel(gen_water_lvl)
+        generator1.setGeneratorLevel(gen_lvl)
+        
+        generator2 = Generator()
+
+        generator2.setWaterLevel(gen_water_lvl)
+        generator2.setGeneratorLevel(gen_lvl)
+        
+        generator3 = Generator()
+
+        generator3.setWaterLevel(gen_water_lvl)
+        generator3.setGeneratorLevel(gen_lvl)
+        
         
         isolation = None
         if isolation_lvl != None:
@@ -186,7 +215,7 @@ if __name__ == "__main__":
         groundWaterPump = GroundWaterPump()
         groundWaterPump.setPumpLevel(ground_pump_lvl)
         
-        powerPlant = PowerPlant(generator, pump, groundWaterPump, reactor,isolation)
+        powerPlant = PowerPlant(generator3, pump, groundWaterPump, reactor,isolation)
         powerPlant.printGeneratorStats()
 
     except IndexError as e:
